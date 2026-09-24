@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Jurnal Barber</title>
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jurnal">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#16181A">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="topbar-title" id="topbarTitle">Azi</div>
+    <div class="topbar-date" id="topbarDate"></div>
+  </header>
+
+  <!-- ============ SCREEN: AZI ============ -->
+  <main id="screen-azi" class="screen">
+
+    <section class="summary-card">
+      <div class="summary-hero">
+        <span class="summary-hero-label">Al tău azi</span>
+        <span class="summary-hero-value" id="sumMineToday">0 lei</span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-item-label">Tunsuri</span>
+          <span class="summary-item-value" id="sumServicesToday">0 lei</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Tips</span>
+          <span class="summary-item-value" id="sumTipsToday">0 lei</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total</span>
+          <span class="summary-item-value" id="sumTotalToday">0 lei</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Șef</span>
+          <span class="summary-item-value" id="sumBossToday">0 lei</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="quickadd">
+      <div class="section-label">Adaugă tuns</div>
+      <div class="quickadd-grid" id="quickAddGrid"></div>
+    </section>
+
+    <section class="cuts-list-section">
+      <div class="section-label">Tunsurile de azi</div>
+      <div id="cutsListToday" class="cuts-list">
+        <div class="empty-state" id="emptyToday">Niciun tuns înregistrat încă azi.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ SCREEN: ISTORIC ============ -->
+  <main id="screen-istoric" class="screen" hidden>
+    <section class="cuts-list-section">
+      <div id="istoricList"></div>
+      <div class="empty-state" id="emptyIstoric" hidden>Nu ai încă niciun tuns înregistrat.</div>
+    </section>
+  </main>
+
+  <!-- ============ SCREEN: PROFIL ============ -->
+  <main id="screen-profil" class="screen" hidden>
+
+    <section class="profil-block">
+      <div class="section-label">Serviciile tale</div>
+      <div id="servicesList" class="services-list"></div>
+      <button class="btn btn-ghost btn-block" id="btnAddService">+ Adaugă serviciu</button>
+    </section>
+
+    <section class="profil-block">
+      <div class="section-label">Împărțirea cu șeful</div>
+
+      <div class="field-row">
+        <label for="cfgThreshold">Prag (lei)</label>
+        <input type="number" inputmode="numeric" id="cfgThreshold" class="field-input">
+      </div>
+      <div class="field-row">
+        <label for="cfgKeepUnder">Cât păstrezi sub prag (lei)</label>
+        <input type="number" inputmode="numeric" id="cfgKeepUnder" class="field-input">
+      </div>
+      <div class="field-row">
+        <label for="cfgPercentOver">Procent peste prag (%)</label>
+        <input type="number" inputmode="numeric" id="cfgPercentOver" class="field-input">
+      </div>
+      <div class="field-row">
+        <label for="cfgTipsPercent">Tips — procent la tine (%)</label>
+        <input type="number" inputmode="numeric" id="cfgTipsPercent" class="field-input">
+      </div>
+
+      <p class="rule-preview" id="rulePreview"></p>
+    </section>
+
+    <section class="profil-block">
+      <div class="section-label">Date</div>
+      <button class="btn btn-ghost btn-block" id="btnExport">Exportă datele (backup)</button>
+      <button class="btn btn-ghost btn-block" id="btnImport">Importă datele</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button class="btn btn-danger btn-block" id="btnReset">Șterge toate datele</button>
+    </section>
+
+    <p class="app-version">Jurnal Barber · funcționează offline · datele rămân pe acest telefon</p>
+
+  </main>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="tabbar">
+    <button class="tab-btn active" data-tab="azi">
+      <span class="tab-icon">●</span><span>Azi</span>
+    </button>
+    <button class="tab-btn" data-tab="istoric">
+      <span class="tab-icon">≡</span><span>Istoric</span>
+    </button>
+    <button class="tab-btn" data-tab="profil">
+      <span class="tab-icon">✎</span><span>Profil</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ============ ADD/EDIT SHEET ============ -->
+<div id="sheetOverlay" class="sheet-overlay" hidden>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+
+    <div class="sheet-row sheet-row-name">
+      <input type="text" id="sheetServiceName" class="sheet-name-input" placeholder="Serviciu">
+    </div>
+
+    <div class="sheet-row">
+      <label>Preț (lei)</label>
+      <div class="sheet-price-row">
+        <button class="stepper" id="priceMinus">–</button>
+        <input type="number" inputmode="numeric" id="sheetPrice" class="sheet-price-input" value="0">
+        <button class="stepper" id="pricePlus">+</button>
+      </div>
+    </div>
+
+    <div class="sheet-row">
+      <label>Tips (lei)</label>
+      <div class="tip-chip-row" id="tipChips">
+        <button class="chip" data-tip="0">0</button>
+        <button class="chip" data-tip="10">10</button>
+        <button class="chip" data-tip="20">20</button>
+        <button class="chip" data-tip="30">30</button>
+        <button class="chip" data-tip="50">50</button>
+      </div>
+      <input type="number" inputmode="numeric" id="sheetTips" class="field-input" value="0">
+    </div>
+
+    <div class="sheet-split-preview">
+      <div class="split-row"><span>Total client</span><span id="previewTotal">0 lei</span></div>
+      <div class="split-row split-row-mine"><span>Tu</span><span id="previewMine">0 lei</span></div>
+      <div class="split-row"><span>Șef</span><span id="previewBoss">0 lei</span></div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn btn-primary btn-block" id="btnSaveCut">Salvează</button>
+      <button class="btn btn-ghost btn-block" id="btnDeleteCut" hidden>Șterge tunsul</button>
+      <button class="btn btn-text btn-block" id="btnCancelSheet">Anulează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SERVICE EDIT SHEET ============ -->
+<div id="serviceSheetOverlay" class="sheet-overlay" hidden>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-row sheet-row-name">
+      <input type="text" id="svcName" class="sheet-name-input" placeholder="Nume serviciu">
+    </div>
+    <div class="sheet-row">
+      <label>Preț implicit (lei)</label>
+      <input type="number" inputmode="numeric" id="svcPrice" class="field-input">
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary btn-block" id="btnSaveService">Salvează serviciul</button>
+      <button class="btn btn-ghost btn-block" id="btnDeleteService" hidden>Șterge serviciul</button>
+      <button class="btn btn-text btn-block" id="btnCancelServiceSheet">Anulează</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
